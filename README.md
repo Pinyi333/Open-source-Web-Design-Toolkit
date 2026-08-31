@@ -9,6 +9,11 @@ upload quota, no telemetry — clone it and run it.
 
 繁體中文說明請見 **[README.zh-TW.md](README.zh-TW.md)**.
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FPinyi333%2FOpen-source-Web-Design-Toolkit)
+
+Deploying your own copy takes about two minutes and needs no configuration —
+there are no environment variables, no database and no API keys to set up.
+
 ---
 
 ## The tools

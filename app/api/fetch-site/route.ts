@@ -16,6 +16,11 @@ import { BlockedUrlError } from "@/lib/net/url-guard";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Comfortably above the fetcher's own 12s budget, so a slow site hits our
+// timeout and gets a useful message rather than being cut off by the host's
+// default function limit and returning an opaque platform error.
+export const maxDuration = 20;
+
 /**
  * A best-effort per-IP rate limit.
  *

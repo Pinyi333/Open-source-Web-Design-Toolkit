@@ -9,6 +9,10 @@ English version: **[README.md](README.md)**
 
 > 註：專案的操作介面與程式碼註解皆為英文，這份文件是給中文使用者的說明。
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FPinyi333%2FOpen-source-Web-Design-Toolkit)
+
+部署一份自己的副本大約兩分鐘，而且不需要任何設定 —— 沒有環境變數、沒有資料庫、也不需要 API key。
+
 ---
 
 ## 三個工具
