@@ -219,6 +219,34 @@ function isBodyScope(declaration: Declaration): boolean {
   return /(^|,)\s*(html|body|:root|\*)\s*(,|$)/i.test(declaration.selector);
 }
 
+/** True specifically for `body`, as opposed to `html` or `:root`. */
+function isBodyElement(declaration: Declaration): boolean {
+  return /(^|,)\s*body\s*(,|$)/i.test(declaration.selector);
+}
+
+/**
+ * Finds the declaration that sets body copy.
+ *
+ * `body` wins over `html` and `:root`: a page that sets `:root { font-size:
+ * 16px }` and `body { font-size: 13px }` has 13px body copy, and taking
+ * whichever rule appeared first would report the wrong number. Rules inside a
+ * media query are skipped so the finding describes the default, not one
+ * breakpoint.
+ */
+function findBodyDeclaration(
+  declarations: Declaration[],
+  property: string,
+): Declaration | undefined {
+  const candidates = declarations.filter(
+    (declaration) =>
+      declaration.property === property && !declaration.media && isBodyScope(declaration),
+  );
+  // Later rules win over earlier ones at equal specificity, so read from the end.
+  return (
+    candidates.findLast(isBodyElement) ?? candidates[candidates.length - 1]
+  );
+}
+
 export interface AnalyzeInput {
   html: string;
   /** Every stylesheet's text; they are analyzed as one corpus. */
@@ -389,9 +417,7 @@ export function buildFindings(input: FindingsInput): Finding[] {
   } = input;
 
   // --- Body text --------------------------------------------------------
-  const bodySize = declarations.find(
-    (d) => d.property === "font-size" && isBodyScope(d) && !d.media,
-  );
+  const bodySize = findBodyDeclaration(declarations, "font-size");
   const bodySizePx = bodySize ? parseLength(bodySize.value)?.px ?? null : null;
 
   if (bodySizePx !== null && bodySizePx < 16) {
@@ -403,9 +429,7 @@ export function buildFindings(input: FindingsInput): Finding[] {
     });
   }
 
-  const bodyLineHeight = declarations.find(
-    (d) => d.property === "line-height" && isBodyScope(d) && !d.media,
-  );
+  const bodyLineHeight = findBodyDeclaration(declarations, "line-height");
   if (bodyLineHeight) {
     const { ratio } = parseLineHeight(bodyLineHeight.value, bodySizePx ?? 16);
     if (ratio !== null && ratio < 1.4) {

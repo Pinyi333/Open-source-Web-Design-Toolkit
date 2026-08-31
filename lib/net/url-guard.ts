@@ -26,10 +26,18 @@ export class BlockedUrlError extends Error {
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:"]);
 
+/** Hosts that mean "this machine", where http is the sensible default. */
+const LOCAL_HOSTS = /^(localhost|127(\.\d{1,3}){3}|0\.0\.0\.0|\[::1\])$/i;
+
 /**
  * Normalizes user input into a URL we are willing to fetch.
+ *
  * Bare hostnames like `example.com` get an `https://` prefix, which is what
- * someone typing into an address bar expects.
+ * someone typing into an address bar expects. The fiddly part is `host:port`:
+ * `new URL("localhost:3100")` parses `localhost:` as the *scheme*, so a bare
+ * `localhost:3000` — the single most common thing to type into a responsive
+ * tester — would be rejected as an unsupported protocol. A colon followed by
+ * digits is a port, not a scheme.
  */
 export function parseTargetUrl(input: string): URL {
   const trimmed = input.trim();
@@ -37,9 +45,23 @@ export function parseTargetUrl(input: string): URL {
     throw new BlockedUrlError("Enter a URL to analyze.");
   }
 
-  const withProtocol = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)
-    ? trimmed
-    : `https://${trimmed}`;
+  const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed);
+  const hasHostPort = /^[^/:\s?#]+:\d+(?:[/?#]|$)/.test(trimmed);
+  const hasSchemeLikePrefix = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed);
+
+  // A scheme we do not support is kept as-is so the check below can name it,
+  // rather than being silently turned into a hostname.
+  const keepAsIs = hasScheme || (hasSchemeLikePrefix && !hasHostPort);
+
+  let withProtocol: string;
+  if (keepAsIs) {
+    withProtocol = trimmed;
+  } else {
+    // A dev server on this machine is almost never behind TLS.
+    const host = trimmed.split(/[/?#]/)[0].split(":")[0];
+    const scheme = LOCAL_HOSTS.test(host) ? "http" : "https";
+    withProtocol = `${scheme}://${trimmed}`;
+  }
 
   let url: URL;
   try {

@@ -318,6 +318,31 @@ describe("analyzeTypography", () => {
     expect(report.findings.some((f) => f.title.includes("13px"))).toBe(true);
   });
 
+  it("reads body copy from `body`, not from `:root`", () => {
+    // :root sets the rem base; body is what paragraphs actually inherit.
+    const report = analyzeTypography({
+      html,
+      css: [":root { font-size: 16px } body { font-size: 13px }"],
+    });
+    expect(report.findings.some((f) => f.title.includes("13px"))).toBe(true);
+  });
+
+  it("ignores a body size set only inside a media query", () => {
+    const report = analyzeTypography({
+      html,
+      css: ["body { font-size: 16px } @media (max-width: 400px) { body { font-size: 13px } }"],
+    });
+    expect(report.findings.some((f) => f.title.includes("13px"))).toBe(false);
+  });
+
+  it("takes the last body rule when there are several", () => {
+    const report = analyzeTypography({
+      html,
+      css: ["body { font-size: 16px } body { font-size: 12px }"],
+    });
+    expect(report.findings.some((f) => f.title.includes("12px"))).toBe(true);
+  });
+
   it("flags a cramped body line-height", () => {
     const report = analyzeTypography({
       html,

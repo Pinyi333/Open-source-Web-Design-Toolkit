@@ -33,6 +33,30 @@ describe("parseTargetUrl", () => {
   it("rejects empty input", () => {
     expect(() => parseTargetUrl("   ")).toThrow(BlockedUrlError);
   });
+
+  it("reads host:port as a host and a port, not as a scheme", () => {
+    // new URL("localhost:3100") would otherwise parse "localhost:" as the
+    // scheme, rejecting the most common input a responsive tester gets.
+    const url = parseTargetUrl("localhost:3100");
+    expect(url.hostname).toBe("localhost");
+    expect(url.port).toBe("3100");
+    expect(url.protocol).toBe("http:");
+
+    const withPath = parseTargetUrl("example.com:8080/dashboard");
+    expect(withPath.hostname).toBe("example.com");
+    expect(withPath.port).toBe("8080");
+    expect(withPath.protocol).toBe("https:");
+  });
+
+  it("defaults local hosts to http and everything else to https", () => {
+    expect(parseTargetUrl("localhost").protocol).toBe("http:");
+    expect(parseTargetUrl("127.0.0.1:8080").protocol).toBe("http:");
+    expect(parseTargetUrl("example.com").protocol).toBe("https:");
+  });
+
+  it("still rejects a scheme it does not support when a port follows", () => {
+    expect(() => parseTargetUrl("ftp://example.com:21")).toThrow(BlockedUrlError);
+  });
 });
 
 describe("isBlockedAddress — IPv4", () => {
