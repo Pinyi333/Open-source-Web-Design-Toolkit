@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest an improvement to an existing tool
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Proposing a **whole new tool**? Use the "New tool proposal" template
+        instead. This one is for changes to what already exists.
+
+  - type: dropdown
+    id: tool
+    attributes:
+      label: Which tool?
+      options:
+        - Color Extractor
+        - Typography Analyzer
+        - Responsive Tester
+        - The site itself
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: >
+        Describe the problem rather than the solution. Knowing what you are
+        actually trying to accomplish often turns up a better answer than the
+        one either of us thought of first.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like it to do?
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Does this fit the project's constraints?
+      description: See the "Not planned" section of ROADMAP.md.
+      options:
+        - label: It does not require user accounts or server-side storage
+        - label: It does not require sending user data to a third party
+        - label: It works with the app self-hosted and offline where possible

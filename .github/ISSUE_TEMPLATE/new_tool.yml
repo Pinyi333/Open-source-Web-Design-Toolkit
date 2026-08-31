@@ -1,0 +1,51 @@
+name: New tool proposal
+description: Propose a tool that is not on the roadmap
+labels: ["enhancement", "new tool"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Six tools are already planned — see
+        [ROADMAP.md](https://github.com/Pinyi333/Open-source-Web-Design-Toolkit/blob/main/ROADMAP.md).
+        If you want to **build** one of those rather than propose a new one,
+        just open an issue saying which, so nobody duplicates the work.
+
+  - type: input
+    id: name
+    attributes:
+      label: What would it be called?
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What would it do?
+      description: One or two sentences, the way it would read on a card.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Who needs it, and what do they do today instead?
+      description: >
+        The most convincing case is a concrete task that is currently annoying.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: fit
+    attributes:
+      label: Does it fit?
+      options:
+        - label: It runs in the browser, or needs at most a stateless server call
+        - label: It needs no accounts, no database and no stored secrets
+        - label: It is useful on its own, without the other tools
+
+  - type: checkboxes
+    id: build
+    attributes:
+      label: Would you like to build it?
+      options:
+        - label: I would like to build this myself
