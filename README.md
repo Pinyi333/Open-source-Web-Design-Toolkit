@@ -20,6 +20,8 @@ there are no environment variables, no database and no API keys to set up.
 
 ### Color Extractor
 
+![The Color Extractor: a mockup on the left, its extracted palette with HEX, RGB, HSL and OKLCH values and WCAG contrast on the right](docs/screenshots/color-extractor.png)
+
 Drop in a screenshot, mockup or photo and get a palette back.
 
 - Median-cut quantization, so each swatch is a real region of the image rather
@@ -34,6 +36,8 @@ Drop in a screenshot, mockup or photo and get a palette back.
 back locally; nothing is uploaded.
 
 ### Typography Analyzer
+
+![The Typography Analyzer: pasted CSS on the left, a list of six findings — body text under 16px, a cramped line height, a skipped heading level — below it](docs/screenshots/typography-analyzer.png)
 
 Point it at a URL, or paste in HTML and CSS.
 
@@ -52,6 +56,8 @@ The paste mode runs entirely in your browser and works on any site, including
 ones that refuse to be fetched.
 
 ### Responsive Tester
+
+![The Responsive Tester: device presets above three live iframes at 393, 820 and 1280 CSS pixels, each rendering the page at its own breakpoint](docs/screenshots/responsive-tester.png)
 
 Load a page across phone, tablet and desktop frames at once.
 

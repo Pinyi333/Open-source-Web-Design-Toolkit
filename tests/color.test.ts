@@ -10,6 +10,7 @@ import {
   rgbToHsl,
   rgbToOklch,
   srgbToLinear,
+  type Rgb,
 } from "@/lib/color/convert";
 import {
   BLACK,
@@ -202,6 +203,54 @@ describe("median cut", () => {
       b: (i * 29) % 256,
     }));
     expect(medianCut(pixels, 6)).toEqual(medianCut(pixels, 6));
+  });
+
+  it("keeps splitting when the biggest region is a single solid color", () => {
+    // A flat design image: five solid bands. The largest band cannot be split
+    // (every pixel in it is identical), which used to abandon the whole loop
+    // and silently return three swatches instead of five.
+    const bands: [Rgb, number][] = [
+      [{ r: 34, g: 87, b: 214 }, 40],
+      [{ r: 244, g: 168, b: 56 }, 25],
+      [{ r: 22, g: 163, b: 116 }, 15],
+      [{ r: 225, g: 72, b: 92 }, 12],
+      [{ r: 24, g: 26, b: 34 }, 8],
+    ];
+    const pixels = bands.flatMap(([color, count]) => Array(count).fill(color));
+
+    const palette = medianCut(pixels, 6);
+
+    expect(palette).toHaveLength(5);
+    expect(palette.map((swatch) => swatch.color)).toEqual(
+      expect.arrayContaining(bands.map(([color]) => color)),
+    );
+    expect(palette.map((swatch) => swatch.count)).toEqual([40, 25, 15, 12, 8]);
+  });
+
+  it("stops at the number of distinct colors, however many are asked for", () => {
+    const pixels = [
+      ...Array(30).fill({ r: 10, g: 10, b: 10 }),
+      ...Array(20).fill({ r: 200, g: 200, b: 200 }),
+    ];
+
+    const palette = medianCut(pixels, 12);
+
+    expect(palette).toHaveLength(2);
+    expect(palette.reduce((sum, s) => sum + s.count, 0)).toBe(50);
+  });
+
+  it("splits a solid region no further than it can go, and still fills the rest", () => {
+    // One huge solid block plus a gradient: the block is unsplittable and is
+    // also the largest box on the first pass, so the gradient only gets
+    // divided if an unsplittable box is skipped rather than fatal.
+    const solid = Array(500).fill({ r: 255, g: 255, b: 255 });
+    const gradient = Array.from({ length: 100 }, (_, i) => ({ r: i, g: 0, b: 0 }));
+
+    const palette = medianCut([...solid, ...gradient], 5);
+
+    expect(palette).toHaveLength(5);
+    expect(palette[0].color).toEqual({ r: 255, g: 255, b: 255 });
+    expect(palette[0].count).toBe(500);
   });
 
   it("has shares that sum to 1", () => {
