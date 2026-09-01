@@ -18,14 +18,18 @@ smoke-tested. Not yet deployed anywhere, and the MCP package is not yet
 published to npm.**
 
 All three v1 tools work end to end and were driven in a real browser, not just
-unit tested. 186 tests pass; lint, typecheck and build are clean, verified from
+unit tested. 189 tests pass; lint, typecheck and build are clean, verified from
 a fresh clone. As of 2026-09-01 the URL fetcher has also been verified against
 real websites from a real machine (see below).
+
+The browser pass on 2026-09-01 (Playwright + Chromium, production build) found
+and fixed **one real bug in the quantizer** that no test covered, and produced
+the README screenshots. Details in History.
 
 | | Status |
 | --- | --- |
 | Code | Complete for v0.1 |
-| Tests | 186 passing, 4 files |
+| Tests | 189 passing, 4 files |
 | CI | GitHub Actions, Node 20 + 22 — **has never run yet** (no push to a repo with Actions enabled observed) |
 | Deployment | **None.** Not on Vercel or anywhere else |
 | Public demo URL | **Does not exist** — README has a deploy button but no live link |
@@ -49,7 +53,7 @@ claude/web-design-toolkit-oss-l8kifj   ← work has been pushed to both
 app/            9 files, ~1950 lines   routes + the one API endpoint
 components/     4 files,  ~860 lines   design system and shared primitives
 lib/           13 files, ~2530 lines   all logic, framework-free
-tests/          4 files, ~1070 lines   186 tests
+tests/          4 files, ~1120 lines   189 tests
 ```
 
 Runtime dependencies are **`next`, `react`, `react-dom` and nothing else**.
@@ -127,8 +131,10 @@ Guard code is `lib/net/url-guard.ts`; tests are table-driven in
    `https://example.com` (HTML + 1 sheet), `http://github.com` (redirect to
    https followed, 573 KB HTML, 40 linked sheets correctly capped at 10 with a
    note) and MDN (27 sheets incl. inline). `169.254.169.254` still refused
-   with 400. What is *still* unverified: the browser UI driving these fetches
-   on this machine (only the API was exercised today).
+   with 400. **The browser UI driving these fetches has now been exercised
+   too** — see "Verified in a browser" below — though not against a *reachable*
+   external site, because this sandbox's egress proxy answers 403 for every
+   outbound host. What the UI showed for that 403 was correct.
 3. **Cross-origin frames cannot scroll in sync.** Not a defect; the README and
    UI deliberately do not claim it.
 4. **The MCP server was smoke-tested over raw JSON-RPC, not from a real MCP
@@ -137,7 +143,68 @@ Guard code is `lib/net/url-guard.ts`; tests are table-driven in
    loopback), but nobody has yet registered it in Claude Code / another agent
    and called it from there.
 
+5. **A palette swatch is the *average* of its box, so the hex it reports may
+   not appear anywhere in the image.** Observed while shooting the README
+   screenshot: a mockup whose hero panel is `#4361ee` with white text on it
+   comes back as `#3b86cc`, because the box holding those blues is averaged
+   with the text pixels. This is how textbook median cut behaves and every
+   swatch is still a real region — but for a tool whose output people paste
+   into a stylesheet, returning the brand colour itself (the box's modal or
+   median colour) would arguably be more useful. **Not changed:** it is a
+   behaviour decision with real trade-offs, not a bug, and it deserves a
+   deliberate choice rather than a drive-by one.
+
+6. **Error notices are not announced to assistive technology.** `Notice` in
+   `components/ui/index.tsx` renders a plain `<div>`, so a screen reader user
+   who submits a URL that the guard refuses gets no announcement. The message
+   itself is correct and visible. Untouched for the same reason as above: it
+   is a shared primitive and the fix should be verified against a real screen
+   reader, which was not possible here.
+
+7. **A failed load leaves the previous frames on screen.** In the Responsive
+   Tester, typing an invalid URL shows the error but keeps the previously
+   loaded iframes rendered beneath it. Arguably right (you keep your last
+   preview) and the error text is unambiguous, so it was left alone.
+
 ---
+
+## Verified in a browser — 2026-09-01
+
+Driven with Playwright + Chromium against `npm run build && npm start`, not
+`next dev`. What was actually exercised, so the next session knows what it does
+*not* need to re-check:
+
+| Checked | Result |
+| --- | --- |
+| Home page, nav, tool cards | Renders; 7 tool links |
+| Theme toggle | System → light → persisted across reload → dark → back to system when `localStorage` is cleared. Correct in both directions |
+| Colour Extractor, real file upload | Palette, swatch table, contrast pills, contrast matrix and all four export tabs all correct. **This is where the quantizer bug surfaced** |
+| Colour Extractor, palette-size slider | Re-quantizes without re-reading the file |
+| Colour Extractor, bad input | A `.txt` file → "not an image"; a fully transparent PNG → "Every pixel in that image is transparent" |
+| Typography Analyzer, paste mode | 6 findings on a deliberately flawed stylesheet, incl. body under 16px, line-height 1.35, and an h1→h3 skip. Scale detection and the family inventory both correct |
+| Typography Analyzer, URL mode failures | Guard refusals reach the UI verbatim: `localhost` → "reserved hostname"; `169.254.169.254` → "link-local / cloud metadata"; junk → "not a valid URL"; empty → button disabled |
+| Responsive Tester, real load | Three live iframes at 393 / 820 / 1280 CSS px, each honouring the target's own media queries (the app's own header collapses to "WDT" in the phone frame). Scale labels 97% / 46% / 30% correct |
+| Responsive Tester, failures | `ftp://` → "Only http and https URLs can be fetched"; a fetch failure → "…403. The preview below may still load.", frames still render |
+| Console / page errors | None on any page. The only console noise is Next.js aborting its own prefetches on navigation |
+
+**Not checkable here:** a fetch of a *reachable* external site. This sandbox's
+egress proxy answers 403 for every outbound host, and its own container address
+is in `192.0.2.0/24`, which the guard correctly refuses as the documentation
+range. The happy path was verified from a real machine earlier the same day
+(limitation 2 above).
+
+### The README screenshots
+
+`docs/screenshots/*.png` — three 1400px-wide PNGs, dark theme, taken from the
+production build in the same browser pass. Regenerating them means driving the
+app again: Playwright is deliberately **not** a devDependency (the four-package
+dependency list is a selling point), so install it outside the repo and point
+`chromium.launch({ executablePath })` at a browser you already have. The Colour
+Extractor shot uses a generated flat-UI mockup rather than a real screenshot,
+so nothing copyrighted is committed.
+
+If the UI changes shape, retake them — a screenshot that no longer matches the
+app is worse than none, same rule as this file.
 
 ## Open items
 
@@ -184,12 +251,17 @@ Decisions, with reasons:
       Generator, CSS Generator, SVG Animation Generator, Lottie Playground,
       AI Design Analyzer). Each is self-contained; `docs/ADDING-A-TOOL.md`
       walks through adding one.
-- [ ] Screenshots/GIFs in the README (currently described but not shown).
-- [ ] A full bug-hunt pass over the codebase was offered but never run.
+- [ ] GIFs in the README. Static screenshots are in now (`docs/screenshots/`,
+      three PNGs, ~140 KB each; how to retake them is noted above); a capture of
+      the palette slider or the frame switcher would still add something.
+- [ ] A full bug-hunt pass over the codebase was offered but never run. The
+      browser pass on 2026-09-01 covered the three tool UIs and their error
+      paths, not `lib/` line by line.
 - [ ] Register the MCP server in a real agent (e.g. `claude mcp add`) and call
       the tools from there — the missing verification step named above.
-- [ ] Drive the web UI in a browser on a real machine (the API is verified;
-      the pages themselves were last driven in the build sandbox).
+- [x] ~~Drive the web UI in a browser.~~ Done 2026-09-01 — see "Verified in a
+      browser" above. Still worth doing on a real machine one day for the one
+      thing this sandbox cannot reach: a live external site in URL mode.
 
 ---
 
@@ -225,7 +297,7 @@ npm install          # Node >= 20.9
 npm run dev          # http://localhost:3000
 npm run lint         # eslint
 npm run typecheck    # tsc --noEmit
-npm test             # vitest, 186 tests
+npm test             # vitest, 189 tests
 npm run build        # production build
 ```
 
@@ -245,6 +317,7 @@ CI runs all four on Node 20 and 22.
 | `477c4c3` | `maxDuration` for deployment; Vercel deploy button |
 | `b522d24` | `WDT_DISABLE_URL_FETCH` so a public deployment can close the endpoint |
 | 2026-09-01 | MCP server in `mcp/`; real-site fetch verified from a real machine |
+| 2026-09-01 | Browser pass: fixed the median-cut early-exit bug, added README screenshots |
 
 Bugs the tests and browser runs caught, worth remembering because they were all
 silent failures:
@@ -258,6 +331,15 @@ silent failures:
   `:root { font-size: 16px }` above `body { font-size: 13px }` reported 16px.
 - **Median cut split at the median index** — tore a run of identical pixels in
   half, so 60% red + 40% blue reported purple.
+- **Median cut stopped splitting at the first indivisible box** — when the
+  *largest* box was one solid colour it could not be split, and the loop
+  `break`ed, abandoning every other splittable box with it. A flat design image
+  of five bands returned three swatches when six were asked for, silently
+  merging two pairs of unrelated colours. Photographs almost never trigger it;
+  screenshots, mockups and logos — the tool's actual input — trigger it
+  immediately. Found by driving the real UI, not by any test. Fixed by
+  retiring the unsplittable box and continuing (`splittable` flag), with three
+  regression tests.
 
 ---
 
