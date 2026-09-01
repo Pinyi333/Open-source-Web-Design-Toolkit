@@ -9,6 +9,7 @@
 
 import { NextResponse } from "next/server";
 
+import { isUrlFetchEnabled, URL_FETCH_DISABLED_MESSAGE } from "@/lib/net/config";
 import { fetchSite } from "@/lib/net/fetch-site";
 import { BlockedUrlError } from "@/lib/net/url-guard";
 
@@ -67,6 +68,15 @@ function clientKey(request: Request): string {
 }
 
 export async function POST(request: Request) {
+  // Checked first: a deployment that has turned this off should not even be
+  // spending rate-limiter state on requests it will refuse.
+  if (!isUrlFetchEnabled()) {
+    return NextResponse.json(
+      { error: URL_FETCH_DISABLED_MESSAGE },
+      { status: 403 },
+    );
+  }
+
   const limit = rateLimit(clientKey(request));
   if (!limit.allowed) {
     return NextResponse.json(

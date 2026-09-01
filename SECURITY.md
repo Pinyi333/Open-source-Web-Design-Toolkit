@@ -39,6 +39,12 @@ These are covered by table-driven tests in `tests/url-guard.test.ts`. If you
 add a bypass technique we do not handle, a failing test case is the most useful
 possible bug report.
 
+**Deploying publicly.** The guard stops this endpoint reaching private
+networks; it does not stop it being used as a general-purpose proxy to the
+public internet. On a deployment anyone can reach, set
+`WDT_DISABLE_URL_FETCH=1`. The flag is read per request, so it takes effect
+without a rebuild, and both tools degrade rather than break — see the README.
+
 **Known limitation.** The per-IP rate limit lives in process memory. It resets
 on redeploy and is per-instance, so it does nothing on a horizontally scaled
 deployment. It exists to stop one person hammering a self-hosted copy, not as a

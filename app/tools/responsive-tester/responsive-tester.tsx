@@ -55,7 +55,11 @@ function deviceFrame(device: Device): Frame {
   };
 }
 
-export function ResponsiveTester() {
+export function ResponsiveTester({
+  urlFetchEnabled = true,
+}: {
+  urlFetchEnabled?: boolean;
+}) {
   const [input, setInput] = useState("");
   const [loadedUrl, setLoadedUrl] = useState<string | null>(null);
   const [precheck, setPrecheck] = useState<Precheck | null>(null);
@@ -92,7 +96,7 @@ export function ResponsiveTester() {
 
     // A local dev server is the most useful thing to preview and the one thing
     // the server cannot fetch, so skip the precheck rather than fail it.
-    if (isLocalUrl(target)) return;
+    if (isLocalUrl(target) || !urlFetchEnabled) return;
 
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -125,7 +129,7 @@ export function ResponsiveTester() {
     } finally {
       setChecking(false);
     }
-  }, [input]);
+  }, [input, urlFetchEnabled]);
 
   const addCustomFrame = useCallback(() => {
     const width = clampViewport(Number(customWidth));
@@ -201,6 +205,24 @@ export function ResponsiveTester() {
               </div>
             </Field>
           </form>
+
+          {!urlFetchEnabled ? (
+            <Notice tone="info" title="Embed pre-check is off on this deployment">
+              The frames below still work — they load in your own browser. What
+              is missing is the check that reads a site&apos;s X-Frame-Options
+              and CSP headers first, so if a frame comes up blank, that site is
+              refusing to be embedded.{" "}
+              <a
+                href="https://github.com/Pinyi333/Open-source-Web-Design-Toolkit#quick-start"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-accent underline underline-offset-2"
+              >
+                Running your own copy
+              </a>{" "}
+              turns it back on.
+            </Notice>
+          ) : null}
 
           {error ? <Notice tone="warning">{error}</Notice> : null}
 

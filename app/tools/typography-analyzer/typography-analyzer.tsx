@@ -35,8 +35,12 @@ interface Result {
 
 const SAMPLE_TEXT = "The quick brown fox jumps over the lazy dog";
 
-export function TypographyAnalyzer() {
-  const [mode, setMode] = useState<Mode>("url");
+export function TypographyAnalyzer({
+  urlFetchEnabled = true,
+}: {
+  urlFetchEnabled?: boolean;
+}) {
+  const [mode, setMode] = useState<Mode>(urlFetchEnabled ? "url" : "paste");
   const [url, setUrl] = useState("");
   const [pasted, setPasted] = useState("");
   const [result, setResult] = useState<Result | null>(null);
@@ -116,15 +120,17 @@ export function TypographyAnalyzer() {
         <CardHeader
           title="What should I analyze?"
           actions={
-            <Tabs
-              label="Input mode"
-              value={mode}
-              onChange={setMode}
-              options={[
-                { id: "url", label: "URL" },
-                { id: "paste", label: "Paste source" },
-              ]}
-            />
+            urlFetchEnabled ? (
+              <Tabs
+                label="Input mode"
+                value={mode}
+                onChange={setMode}
+                options={[
+                  { id: "url", label: "URL" },
+                  { id: "paste", label: "Paste source" },
+                ]}
+              />
+            ) : null
           }
         />
         <div className="space-y-4 p-5">
@@ -179,6 +185,23 @@ export function TypographyAnalyzer() {
               </Button>
             </div>
           )}
+
+          {!urlFetchEnabled ? (
+            <Notice tone="info" title="URL fetching is off on this deployment">
+              Analyzing a URL needs a server to fetch the page, which this copy
+              has turned off. Everything else works: paste a page&apos;s source
+              above, or{" "}
+              <a
+                href="https://github.com/Pinyi333/Open-source-Web-Design-Toolkit#quick-start"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="text-accent underline underline-offset-2"
+              >
+                run your own copy
+              </a>
+              , where URL mode is on by default.
+            </Notice>
+          ) : null}
 
           {error ? <Notice tone="error">{error}</Notice> : null}
         </div>

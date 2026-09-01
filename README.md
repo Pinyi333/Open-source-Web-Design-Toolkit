@@ -133,6 +133,28 @@ surface, so it is written defensively:
 If you self-host and find a way past any of that,
 [SECURITY.md](SECURITY.md) says how to report it.
 
+### Deploying publicly: turn URL fetching off
+
+The SSRF guard stops this endpoint reaching *private* networks. It cannot stop
+it being used as a general-purpose proxy to the *public* internet — on a
+deployment anyone can reach, strangers can spend your bandwidth and get your
+deployment's IP blocked by sites that dislike the traffic.
+
+So on a public deployment, set:
+
+```
+WDT_DISABLE_URL_FETCH=1
+```
+
+Both tools stay useful. The Typography Analyzer keeps its paste mode, which
+runs the same analyzer entirely in the browser. The Responsive Tester keeps
+every frame, because the iframes load in the visitor's own browser and never
+touched the server — only the embed pre-check is lost.
+
+The flag is read **per request**, not baked in at build time, so setting it
+takes effect without a rebuild. It is off by default: running locally, this is
+your own machine fetching pages for you, which is the point of the tool.
+
 ---
 
 ## Roadmap

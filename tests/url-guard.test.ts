@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import {
   BlockedUrlError,
@@ -7,6 +7,7 @@ import {
   parseTargetUrl,
 } from "@/lib/net/url-guard";
 import { extractStyleRefs, readEmbeddingPolicy } from "@/lib/net/fetch-site";
+import { isTruthyFlag, isUrlFetchEnabled } from "@/lib/net/config";
 
 describe("parseTargetUrl", () => {
   it("assumes https for a bare hostname", () => {
@@ -249,5 +250,38 @@ describe("extractStyleRefs", () => {
       base,
     );
     expect(links).toEqual([]);
+  });
+});
+
+describe("URL fetch feature flag", () => {
+  const original = process.env.WDT_DISABLE_URL_FETCH;
+  afterEach(() => {
+    if (original === undefined) delete process.env.WDT_DISABLE_URL_FETCH;
+    else process.env.WDT_DISABLE_URL_FETCH = original;
+  });
+
+  it("is on by default, so self-hosting needs no configuration", () => {
+    delete process.env.WDT_DISABLE_URL_FETCH;
+    expect(isUrlFetchEnabled()).toBe(true);
+  });
+
+  it.each(["1", "true", "TRUE", "yes", " 1 "])(
+    "is off when the flag is set to %j",
+    (value) => {
+      process.env.WDT_DISABLE_URL_FETCH = value;
+      expect(isUrlFetchEnabled()).toBe(false);
+    },
+  );
+
+  it.each(["", "0", "false", "FALSE"])(
+    "stays on for the falsy value %j",
+    (value) => {
+      process.env.WDT_DISABLE_URL_FETCH = value;
+      expect(isUrlFetchEnabled()).toBe(true);
+    },
+  );
+
+  it("treats an unset variable as false", () => {
+    expect(isTruthyFlag(undefined)).toBe(false);
   });
 });
