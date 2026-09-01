@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "h=$(git log -1 --format=%h 2>/dev/null); f=$(git log -1 --format=%h -- hand-off.md 2>/dev/null); if [ -n \"$h\" ] && [ \"$h\" != \"$f\" ]; then printf \"%s\\n\" \"{\\\"systemMessage\\\":\\\"hand-off.md is behind HEAD. Update it before finishing this session — see CLAUDE.md.\\\"}\"; fi; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
