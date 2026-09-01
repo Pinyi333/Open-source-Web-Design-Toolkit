@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    // The server reuses ../lib as-is, so rootDir is the repo root and the
+    // compiled tree lands at dist/mcp/src + dist/lib.
+    "rootDir": "..",
+    "outDir": "dist",
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    // No "type": "module" in package.json, so nodenext compiles to CommonJS —
+    // which is what lets ../lib's extensionless relative imports work verbatim.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "types": ["node"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*.ts", "../lib/**/*.ts"]
+}

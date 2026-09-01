@@ -51,6 +51,12 @@ English version: **[README.md](README.md)**
 
 每個框都是該 CSS 寬度下的真實 iframe，所以你看到的是網站自己的響應式行為。
 
+### 給 AI 代理用的 MCP 伺服器
+
+同一套分析工具也以 [MCP 伺服器](mcp/README.md)的形式提供給 AI 編碼代理 ——
+`extract_palette`、`check_contrast`、`analyze_typography` 等，透過 stdio
+在本機執行，完全不需要瀏覽器。設定方式見 [mcp/README.md](mcp/README.md)。
+
 ---
 
 ## 快速開始

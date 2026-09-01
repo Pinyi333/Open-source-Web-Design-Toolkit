@@ -13,11 +13,14 @@ can pick it up without re-reading the whole history.
 
 ## Where things stand
 
-**v0.1 is built, tested and pushed. Not yet deployed anywhere.**
+**v0.1 is built, tested and pushed. The MCP server now exists and is
+smoke-tested. Not yet deployed anywhere, and the MCP package is not yet
+published to npm.**
 
 All three v1 tools work end to end and were driven in a real browser, not just
 unit tested. 186 tests pass; lint, typecheck and build are clean, verified from
-a fresh clone.
+a fresh clone. As of 2026-09-01 the URL fetcher has also been verified against
+real websites from a real machine (see below).
 
 | | Status |
 | --- | --- |
@@ -119,15 +122,20 @@ Guard code is `lib/net/url-guard.ts`; tests are table-driven in
 1. **The per-IP rate limit is best-effort only.** It lives in process memory,
    so it resets on redeploy and is per-instance. On serverless it is close to
    useless. Documented in `SECURITY.md`. A real deployment needs a WAF.
-2. **A happy-path fetch of a real site was never verified.** The build sandbox's
-   egress proxy allowlists only a few package registries, so every attempt to
-   fetch an ordinary website was refused by policy. What *was* verified: the
-   request goes out, a real remote response comes back and is handled correctly
-   (GitHub returned 503, npm registry returned JSON and was correctly rejected
-   by the content-type check). **First thing to try on a real machine: analyze
-   an actual URL.**
+2. ~~A happy-path fetch of a real site was never verified.~~ **Verified
+   2026-09-01 on a real machine**: `POST /api/fetch-site` handled
+   `https://example.com` (HTML + 1 sheet), `http://github.com` (redirect to
+   https followed, 573 KB HTML, 40 linked sheets correctly capped at 10 with a
+   note) and MDN (27 sheets incl. inline). `169.254.169.254` still refused
+   with 400. What is *still* unverified: the browser UI driving these fetches
+   on this machine (only the API was exercised today).
 3. **Cross-origin frames cannot scroll in sync.** Not a defect; the README and
    UI deliberately do not claim it.
+4. **The MCP server was smoke-tested over raw JSON-RPC, not from a real MCP
+   client.** All six tools returned correct results over stdio (including the
+   red/blue regression image, a live URL fetch, and the guard refusing
+   loopback), but nobody has yet registered it in Claude Code / another agent
+   and called it from there.
 
 ---
 
@@ -135,27 +143,40 @@ Guard code is `lib/net/url-guard.ts`; tests are table-driven in
 
 ### Needs a person (cannot be done from a session)
 
-- [ ] **GitHub → Settings → Branches → set default branch to `main`.** There is
-      no API for this. Until then the repo's default is the `claude/...` branch.
+- [ ] **Set the default branch to `main`.** `gh repo edit
+      Pinyi333/Open-source-Web-Design-Toolkit --default-branch main` does it
+      in one line (a session tried on 2026-09-01; the permission system
+      blocked repo-settings changes, so it needs a human terminal).
 - [ ] **Deploy to Vercel.** Deploy button is in the README; the app needs no
       configuration. **Set `WDT_DISABLE_URL_FETCH=1` in Vercel's environment
       variables** — a public deployment is otherwise an open proxy to the
       public internet (the SSRF guard only stops it reaching private networks).
 - [ ] **Paste the deployed URL back**, so it can be added to both READMEs.
+- [ ] **Publish `web-design-toolkit-mcp` to npm** (`cd mcp && npm publish`;
+      `prepublishOnly` builds). Publishing needs an npm account and 2FA, so a
+      person has to run it.
 
-### Next piece of work — decided direction, not started
+### MCP server — built 2026-09-01, decisions made
 
-**Build an MCP server** exposing the same tools to AI coding agents
-(`extract_palette`, `analyze_typography`, ...).
+Lives in `mcp/` as **its own package**, so the web app's runtime dependency
+list stays `next`/`react`/`react-dom` only. Six tools: `extract_palette`,
+`convert_color`, `check_contrast`, `export_palette`, `analyze_typography`
+(URL *or* raw html/css), `list_device_presets`. See `mcp/README.md`.
 
-Rationale: `lib/` is already pure functions with no DOM, so wrapping it is
-mostly plumbing. It runs on the user's own machine, so the open-proxy problem
-does not exist there at all. And "design analysis MCP server for coding agents"
-is a far less crowded space than "another online colour picker" — which matters
-for the traction goal below. This is an **addition**, not a replacement: the web
-app stays for designers, MCP is for agents.
+Decisions, with reasons:
 
-The `mcp-builder` skill is available and is the right starting point.
+- **Dependencies (mcp package only): `@modelcontextprotocol/sdk`, `zod`,
+  `pngjs`, `jpeg-js`.** The SDK and zod are unavoidable for MCP; pngjs/jpeg-js
+  are small pure-JS decoders — writing PNG inflate + JPEG DCT by hand fails
+  the "few dozen lines" test that justified hand-writing everything else.
+- **`tsc` compiles `../lib` into `mcp/dist` verbatim** (`rootDir: ".."`,
+  `module: nodenext` emitting CJS, which is what lets lib's extensionless
+  relative imports work unchanged). No bundler, no path rewriting.
+- **The URL tool keeps the SSRF guard as-is**, so localhost cannot be fetched
+  even locally. Deliberate: safe by default, one behaviour everywhere, and an
+  agent analyzing a local site can pass `html`/`css` directly.
+- Root `tsconfig`/`eslint` exclude `mcp/` (own tsconfig + deps); CI got an
+  extra step that builds it on both Node versions.
 
 ### Not started
 
@@ -165,6 +186,10 @@ The `mcp-builder` skill is available and is the right starting point.
       walks through adding one.
 - [ ] Screenshots/GIFs in the README (currently described but not shown).
 - [ ] A full bug-hunt pass over the codebase was offered but never run.
+- [ ] Register the MCP server in a real agent (e.g. `claude mcp add`) and call
+      the tools from there — the missing verification step named above.
+- [ ] Drive the web UI in a browser on a real machine (the API is verified;
+      the pages themselves were last driven in the build sandbox).
 
 ---
 
@@ -219,6 +244,7 @@ CI runs all four on Node 20 and 22.
 | `0dbab2c` | Regenerated the lockfile from a clean install |
 | `477c4c3` | `maxDuration` for deployment; Vercel deploy button |
 | `b522d24` | `WDT_DISABLE_URL_FETCH` so a public deployment can close the endpoint |
+| 2026-09-01 | MCP server in `mcp/`; real-site fetch verified from a real machine |
 
 Bugs the tests and browser runs caught, worth remembering because they were all
 silent failures:

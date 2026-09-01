@@ -1,0 +1,47 @@
+{
+  "name": "web-design-toolkit-mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing the Web Design Toolkit's design-analysis tools (palette extraction, WCAG contrast, typography auditing) to AI coding agents.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pinyi333/Open-source-Web-Design-Toolkit.git",
+    "directory": "mcp"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "design",
+    "color",
+    "palette",
+    "typography",
+    "wcag",
+    "contrast"
+  ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "bin": {
+    "web-design-toolkit-mcp": "dist/mcp/src/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/mcp/src/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.13.0",
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.1",
+    "@types/pngjs": "^6.0.5",
+    "typescript": "5.9.3"
+  }
+}

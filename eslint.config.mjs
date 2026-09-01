@@ -7,7 +7,15 @@ import nextTypeScript from "eslint-config-next/typescript";
  */
 const eslintConfig = [
   {
-    ignores: [".next/**", "node_modules/**", "next-env.d.ts", "coverage/**"],
+    // mcp/ is its own package with its own tsconfig and dependencies; the
+    // Next-flavoured rules here would only produce noise on it.
+    ignores: [
+      ".next/**",
+      "**/node_modules/**",
+      "next-env.d.ts",
+      "coverage/**",
+      "mcp/dist/**",
+    ],
   },
   ...nextCoreWebVitals,
   ...nextTypeScript,

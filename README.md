@@ -66,6 +66,13 @@ Load a page across phone, tablet and desktop frames at once.
 Each frame is a real iframe at that CSS width, so the site's own media queries
 decide what it renders.
 
+### For AI agents: the MCP server
+
+The same analysis tools are available to AI coding agents as an
+[MCP server](mcp/README.md) — `extract_palette`, `check_contrast`,
+`analyze_typography` and friends, running locally over stdio with no browser
+involved. See [mcp/README.md](mcp/README.md) for setup.
+
 ---
 
 ## Quick start
