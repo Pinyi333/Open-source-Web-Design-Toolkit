@@ -93,6 +93,15 @@ server.registerTool(
       return fail(`Could not read the file at ${image_path}.`);
     }
 
+    // A palette never needs a giant original, and decoding one costs RAM.
+    const MAX_IMAGE_BYTES = 32 * 1024 * 1024;
+    if (buffer.length > MAX_IMAGE_BYTES) {
+      return fail(
+        `That file is ${(buffer.length / 1024 / 1024).toFixed(1)} MB; the limit is 32 MB. ` +
+          "Resize or crop the image first.",
+      );
+    }
+
     let decoded;
     try {
       decoded = decodeImage(buffer);
@@ -221,9 +230,10 @@ server.registerTool(
       "URL, or pass html/css directly (required for localhost or private " +
       "sites, which the URL fetcher refuses by design).",
     inputSchema: {
+      // Plain string, not z.string().url(): the guard's parseTargetUrl accepts
+      // bare hostnames like "example.com" and gives better error messages.
       url: z
         .string()
-        .url()
         .optional()
         .describe("Public http(s) URL to fetch and analyze"),
       html: z.string().optional().describe("Raw HTML to analyze instead of a URL"),

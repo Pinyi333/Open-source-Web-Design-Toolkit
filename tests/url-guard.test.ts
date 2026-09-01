@@ -110,6 +110,11 @@ describe("isBlockedAddress — IPv6", () => {
     ["ff02::1", "multicast"],
     ["2001:db8::1", "documentation range"],
     ["64:ff9b::1", "NAT64 translation range"],
+    ["::7f00:1", "IPv4-compatible range"],
+    ["::127.0.0.1", "IPv4-compatible range"],
+    ["2001::1", "Teredo tunneling range"],
+    ["2002:7f00:1::1", "6to4 embedding loopback"],
+    ["2002:a9fe:a9fe::1", "6to4 embedding link-local / cloud metadata"],
   ])("blocks %s", (address, reason) => {
     const result = isBlockedAddress(address);
     expect(result.blocked).toBe(true);
@@ -128,6 +133,8 @@ describe("isBlockedAddress — IPv6", () => {
   it("allows public IPv6", () => {
     expect(isBlockedAddress("2606:4700:4700::1111").blocked).toBe(false);
     expect(isBlockedAddress("2a00:1450:4009:80f::200e").blocked).toBe(false);
+    // 6to4 wrapping a public IPv4 address stays reachable.
+    expect(isBlockedAddress("2002:801:801::1").blocked).toBe(false);
   });
 
   it("ignores a zone index and brackets", () => {
