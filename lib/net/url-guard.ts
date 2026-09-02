@@ -220,6 +220,21 @@ export function isBlockedAddress(address: string): BlockResult {
       const mapped = [v6[6] >> 8, v6[6] & 0xff, v6[7] >> 8, v6[7] & 0xff].join(".");
       return isBlockedAddress(mapped);
     }
+    // ::a.b.c.d — the deprecated IPv4-compatible form. Nothing legitimate
+    // lives in ::/96 beyond :: and ::1 (both handled above), and some stacks
+    // have treated the embedded IPv4 as dialable, so refuse the whole range.
+    if (v6.slice(0, 6).every((g) => g === 0)) {
+      return { blocked: true, reason: "IPv4-compatible range" };
+    }
+    // 2002::/16 (6to4) embeds an IPv4 address that tunnelling relays will
+    // dial on our behalf, so judge the address it embeds.
+    if (g0 === 0x2002) {
+      const embedded = [v6[1] >> 8, v6[1] & 0xff, v6[2] >> 8, v6[2] & 0xff].join(".");
+      const check = isBlockedAddress(embedded);
+      return check.blocked
+        ? { blocked: true, reason: `6to4 embedding ${check.reason}` }
+        : { blocked: false };
+    }
     // fc00::/7 unique local, fe80::/10 link-local.
     if ((g0 & 0xfe00) === 0xfc00) {
       return { blocked: true, reason: "unique local address" };
@@ -230,9 +245,13 @@ export function isBlockedAddress(address: string): BlockResult {
     if ((g0 & 0xff00) === 0xff00) {
       return { blocked: true, reason: "multicast" };
     }
-    // 2001:db8::/32 documentation, 64:ff9b::/96 NAT64 into IPv4 space.
+    // 2001:db8::/32 documentation, 64:ff9b::/96 NAT64 into IPv4 space,
+    // 2001::/32 Teredo (tunnels with an IPv4 address XOR-hidden inside).
     if (g0 === 0x2001 && g1 === 0x0db8) {
       return { blocked: true, reason: "documentation range" };
+    }
+    if (g0 === 0x2001 && g1 === 0) {
+      return { blocked: true, reason: "Teredo tunneling range" };
     }
     if (g0 === 0x0064 && g1 === 0xff9b) {
       return { blocked: true, reason: "NAT64 translation range" };
