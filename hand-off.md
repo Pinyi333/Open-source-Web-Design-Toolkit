@@ -18,7 +18,7 @@ smoke-tested. Not yet deployed anywhere, and the MCP package is not yet
 published to npm.**
 
 All three v1 tools work end to end and were driven in a real browser, not just
-unit tested. 189 tests pass; lint, typecheck and build are clean, verified from
+unit tested. 194 tests pass; lint, typecheck and build are clean, verified from
 a fresh clone. As of 2026-09-01 the URL fetcher has also been verified against
 real websites from a real machine (see below).
 
@@ -29,7 +29,7 @@ the README screenshots. Details in History.
 | | Status |
 | --- | --- |
 | Code | Complete for v0.1 |
-| Tests | 189 passing, 4 files |
+| Tests | 194 passing, 4 files |
 | CI | GitHub Actions, Node 20 + 22 — **has never run yet** (no push to a repo with Actions enabled observed) |
 | Deployment | **None.** Not on Vercel or anywhere else |
 | Public demo URL | **Does not exist** — README has a deploy button but no live link |
@@ -53,7 +53,7 @@ claude/web-design-toolkit-oss-l8kifj   ← work has been pushed to both
 app/            9 files, ~1950 lines   routes + the one API endpoint
 components/     4 files,  ~860 lines   design system and shared primitives
 lib/           13 files, ~2530 lines   all logic, framework-free
-tests/          4 files, ~1120 lines   189 tests
+tests/          4 files, ~1125 lines   194 tests
 ```
 
 Runtime dependencies are **`next`, `react`, `react-dom` and nothing else**.
@@ -297,7 +297,7 @@ npm install          # Node >= 20.9
 npm run dev          # http://localhost:3000
 npm run lint         # eslint
 npm run typecheck    # tsc --noEmit
-npm test             # vitest, 189 tests
+npm test             # vitest, 194 tests
 npm run build        # production build
 ```
 
@@ -318,6 +318,7 @@ CI runs all four on Node 20 and 22.
 | `b522d24` | `WDT_DISABLE_URL_FETCH` so a public deployment can close the endpoint |
 | 2026-09-01 | MCP server in `mcp/`; real-site fetch verified from a real machine |
 | 2026-09-01 | Browser pass: fixed the median-cut early-exit bug, added README screenshots |
+| 2026-09-01 | URL guard hardened against IPv6 tunnelling (::/96, 6to4, Teredo); MCP image size cap |
 
 Bugs the tests and browser runs caught, worth remembering because they were all
 silent failures:
