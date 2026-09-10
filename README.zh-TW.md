@@ -19,6 +19,8 @@ English version: **[README.md](README.md)**
 
 ### Color Extractor（配色擷取）
 
+![Color Extractor：左邊是來源設計稿，右邊是擷取出的調色盤，含 HEX、RGB、HSL、OKLCH 與 WCAG 對比值](docs/screenshots/color-extractor.png)
+
 丟一張截圖、設計稿或照片進去，拿回一組調色盤。
 
 - 使用 median cut 分色演算法，每個色票代表圖片中一塊真實的區域，而不是單一取樣像素。可調 3 到 12 色。
@@ -29,6 +31,8 @@ English version: **[README.md](README.md)**
 **圖片不會離開你的瀏覽器。** 檔案是在本機解碼進 canvas 再讀回像素，不會上傳到任何地方。
 
 ### Typography Analyzer（字體排版分析）
+
+![Typography Analyzer：上方貼上的 CSS，下方列出六項發現，包含內文小於 16px、行高過擠、標題層級跳號](docs/screenshots/typography-analyzer.png)
 
 輸入網址，或直接貼上 HTML 與 CSS。
 
@@ -41,6 +45,8 @@ English version: **[README.md](README.md)**
 貼上原始碼的模式完全在瀏覽器內執行，任何網站都能分析 —— 包括那些擋住抓取的網站。
 
 ### Responsive Tester（響應式測試）
+
+![Responsive Tester：裝置預設值下方是三個實際的 iframe，分別為 393、820、1280 CSS 像素寬，各自套用自己的斷點](docs/screenshots/responsive-tester.png)
 
 同時在手機、平板、桌機的框架中載入同一個頁面。
 

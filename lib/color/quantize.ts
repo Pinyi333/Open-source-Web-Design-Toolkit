@@ -20,6 +20,11 @@ export interface Swatch {
 
 interface Box {
   pixels: Rgb[];
+  /**
+   * Cleared once a split has been attempted and found impossible, so the same
+   * box is not retried on every pass.
+   */
+  splittable: boolean;
 }
 
 const CHANNELS = ["r", "g", "b"] as const;
@@ -90,7 +95,10 @@ function splitBox(box: Box): [Box, Box] | null {
   // nothing left to divide.
   if (cut === -1) return null;
 
-  return [{ pixels: sorted.slice(0, cut) }, { pixels: sorted.slice(cut) }];
+  return [
+    { pixels: sorted.slice(0, cut), splittable: true },
+    { pixels: sorted.slice(cut), splittable: true },
+  ];
 }
 
 /**
@@ -100,23 +108,33 @@ function splitBox(box: Box): [Box, Box] | null {
 export function medianCut(pixels: Rgb[], maxColors: number): Swatch[] {
   if (pixels.length === 0 || maxColors < 1) return [];
 
-  let boxes: Box[] = [{ pixels }];
+  let boxes: Box[] = [{ pixels, splittable: true }];
 
   while (boxes.length < maxColors) {
     // Always split the box holding the most pixels; that is what keeps the
-    // palette from spending detail on a handful of stray pixels.
+    // palette from spending detail on a handful of stray pixels. Boxes already
+    // known to be indivisible are passed over, not chosen and then abandoned.
     let targetIndex = -1;
     let targetSize = 1;
     boxes.forEach((box, index) => {
-      if (box.pixels.length > targetSize) {
+      if (box.splittable && box.pixels.length > targetSize) {
         targetSize = box.pixels.length;
         targetIndex = index;
       }
     });
+    // Nothing divisible is left: the image has fewer distinct colors than
+    // were asked for.
     if (targetIndex === -1) break;
 
     const split = splitBox(boxes[targetIndex]);
-    if (!split) break;
+    if (!split) {
+      // One solid region of colour. Retiring just this box and continuing is
+      // the whole point: stopping here would abandon every *other* box too,
+      // which is how a flat design image with five bands returned three
+      // swatches when six were asked for.
+      boxes = boxes.with(targetIndex, { ...boxes[targetIndex], splittable: false });
+      continue;
+    }
 
     boxes = [
       ...boxes.slice(0, targetIndex),
