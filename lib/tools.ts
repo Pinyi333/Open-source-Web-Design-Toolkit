@@ -58,6 +58,15 @@ export const TOOLS: Tool[] = [
     icon: "M10 3h4v4h-4z M3 17h4v4H3z M10 17h4v4h-4z M17 17h4v4h-4z M12 7v5 M5 17v-5h14v5",
   },
   {
+    slug: "image-prompt-builder",
+    name: "Image Prompt Builder",
+    tagline: "Assemble image prompts by industry and style",
+    description:
+      "Type a keyword, then pick an industry, palette, style, mood, camera shot and lighting to assemble a ready-to-paste image prompt for Nano Banana, Midjourney or Stable Diffusion, in English or Traditional Chinese. No idea where to start? One-click match picks a combination that fits, or ask your own Claude.",
+    status: "stable",
+    icon: "M4 5h16v14H4z M4 15l4-4 3 3 4-5 5 6 M15.5 8.5h.01 M19 2v3 M17.5 3.5h3",
+  },
+  {
     slug: "screenshot-analyzer",
     name: "Screenshot Analyzer",
     tagline: "Measure spacing and alignment in a mockup",

@@ -19,6 +19,9 @@ entirely on your own machine over stdio.
 | `plan_site` | A site architecture from an industry template: sitemap with sections per page, navigation, KPIs, recommendations (Markdown or JSON) |
 | `generate_wireframe` | A low-fidelity SVG wireframe of one planned page (or of your own section list), desktop or mobile; optionally written to a file |
 | `match_cases` | Reference sites ranked by industry, features and style, with reasons; reads your Notion library when configured |
+| `list_image_prompt_options` | Every Image Prompt Builder option (industry, palette, style, mood, shot, lighting, ratio) with ids and labels |
+| `build_image_prompt` | Keyword + option ids → an image prompt (natural / Midjourney / SD, English or Traditional Chinese) with a negative prompt |
+| `match_image_prompt` | Rule-based one-click match: fills unlocked groups to suit the keyword's industry and returns the assembled prompt |
 
 ## Setup
 

@@ -29,7 +29,7 @@ real websites from a real machine (see below).
 | | Status |
 | --- | --- |
 | Code | Complete for v0.1 |
-| Tests | 240 passing, 5 files |
+| Tests | 276 passing, 6 files (with the Image Prompt Builder branch) |
 | CI | GitHub Actions, Node 20 + 22 — first observed green run on PR #4 (2026-10-31) |
 | Deployment | **None.** Not on Vercel or anywhere else |
 | Public demo URL | **Does not exist** — README has a deploy button but no live link |
@@ -81,6 +81,35 @@ Node >= 20.9.
   cases ranked with reasons from a built-in sample or the user's Notion
   database; optional Claude review with the user's own API key; Markdown /
   JSON export. Full write-up in `docs/SITE-PLANNER.md`.
+
+### Image Prompt Builder — built 2026-10-31 (PR #5)
+
+`app/tools/image-prompt-builder/`, logic in `lib/prompt/` (catalogue, builder,
+seeded one-click match, BYO-key Claude match) and a shared
+`lib/ai/anthropic.ts` fetch client. 36 tests in `tests/prompt.test.ts`. MCP
+gained `list_image_prompt_options`, `build_image_prompt`, `match_image_prompt`
+(`mcp/src/prompt-tools.ts`).
+
+Decisions, with reasons:
+
+- **Industry ids reuse the Site Planner's ten** (a test enforces it) plus six
+  image-relevant ones (manufacturing, beauty, fashion, hospitality, finance,
+  fitness), so a site plan and its imagery share one vocabulary.
+- **`lib/ai/anthropic.ts` is a generic copy of the Site Planner's fetch code**
+  (the two were built in parallel). Open follow-up: make
+  `lib/planner/claude.ts` call `callClaude` / `extractJsonObject` from there
+  instead of keeping its own copy. Left out of this PR to keep it to one tool.
+- **One-click match is rule-based, not an LLM** (keeps the "tools do not call
+  an LLM" decision): keyword → industry by keyword hits, then industry
+  recommendations with a 20 % wildcard, seeded PRNG so tests are exact.
+  Claude is opt-in only, with the visitor's own key or via MCP.
+- **UI copy is Traditional Chinese first, English second** for this tool only,
+  because its audience and catalogue are bilingual; the rest of the app stays
+  English.
+
+Not verified: the real Anthropic API call (browser path was tested with an
+intercepted fake response only); prompts were not run through any image model
+to judge output quality; MCP tools tested over raw JSON-RPC, not a real client.
 
 ### Session support files
 
@@ -288,6 +317,7 @@ CI runs all four on Node 20 and 22.
 | `b522d24` | `WDT_DISABLE_URL_FETCH` so a public deployment can close the endpoint |
 | 2026-09-01 | MCP server in `mcp/`; real-site fetch verified from a real machine |
 | 2026-10-31 | Site Planner tool, `/api/notion/cases`, four planner MCP tools |
+| 2026-10-31 | Image Prompt Builder (+3 MCP tools), PR #5 |
 
 Bugs the tests and browser runs caught, worth remembering because they were all
 silent failures:
