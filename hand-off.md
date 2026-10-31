@@ -30,7 +30,7 @@ real websites from a real machine (see below).
 | --- | --- |
 | Code | Complete for v0.1 |
 | Tests | 240 passing, 5 files |
-| CI | GitHub Actions, Node 20 + 22 — **has never run yet** (no push to a repo with Actions enabled observed) |
+| CI | GitHub Actions, Node 20 + 22 — first observed green run on PR #4 (2026-10-31) |
 | Deployment | **None.** Not on Vercel or anywhere else |
 | Public demo URL | **Does not exist** — README has a deploy button but no live link |
 | Default branch | `main` exists, but **GitHub's default branch setting has not been changed** |
@@ -137,7 +137,7 @@ Guard code is `lib/net/url-guard.ts`; tests are table-driven in
 | Plain `fetch` to Anthropic and Notion, no SDKs | Keeps runtime deps at next/react/react-dom (see Dependencies in CLAUDE.md) |
 | Notion API version pinned to `2022-06-28` | The `databases/{id}/query` endpoint the parser was written for. Newer versions move to data sources; revisit if Notion retires it |
 | Notion token for MCP via env (`NOTION_TOKEN`, `NOTION_CASES_DATABASE_ID`), never a tool argument | Keeps the secret out of agent conversations |
-| Site Planner page uses the repo's Next.js/React pattern with a plain-CSS module, no GSAP | Consistency with the other tools and no new runtime dependency. Penny's standing preference is vanilla HTML/CSS/JS + GSAP; she was asked on 2026-10-31 whether this page should be standalone vanilla instead — check the PR thread for her answer |
+| Site Planner page uses the repo's Next.js/React pattern with a plain-CSS module, no GSAP | Consistency with the other tools and no new runtime dependency. Penny's general preference is vanilla HTML/CSS/JS + GSAP, but on 2026-10-31 she chose to keep this repo's tools in Next.js for consistency. Don't port tool pages to vanilla |
 
 ---
 
