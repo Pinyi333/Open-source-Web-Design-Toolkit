@@ -15,6 +15,10 @@ entirely on your own machine over stdio.
 | `export_palette` | A list of hex colours → paste-ready CSS variables, Tailwind `@theme`, JSON, or W3C design tokens |
 | `analyze_typography` | Typography audit of a public URL, or of HTML/CSS passed directly: families and origins, size scale and consistency, weights, heading structure, breakpoints, findings |
 | `list_device_presets` | The Responsive Tester's device viewports (CSS pixels) and common breakpoints |
+| `list_industries` | The Site Planner's industry templates, goals, features, scales and section kinds |
+| `plan_site` | A site architecture from an industry template: sitemap with sections per page, navigation, KPIs, recommendations (Markdown or JSON) |
+| `generate_wireframe` | A low-fidelity SVG wireframe of one planned page (or of your own section list), desktop or mobile; optionally written to a file |
+| `match_cases` | Reference sites ranked by industry, features and style, with reasons; reads your Notion library when configured |
 
 ## Setup
 
@@ -42,6 +46,22 @@ Or in a project's `.mcp.json`:
   }
 }
 ```
+
+### Optional: your Notion case library
+
+`match_cases` uses a built-in sample library unless the server can read your
+Notion database. Pass the token through the environment, never as a tool
+argument, so it stays out of the conversation:
+
+```bash
+claude mcp add web-design-toolkit \
+  -e NOTION_TOKEN=ntn_your_integration_token \
+  -e NOTION_CASES_DATABASE_ID=your_database_id_or_link \
+  -- node /path/to/Open-source-Web-Design-Toolkit/mcp/dist/mcp/src/index.js
+```
+
+The database layout is described in
+[docs/SITE-PLANNER.md](../docs/SITE-PLANNER.md#notion-case-library).
 
 ## Notes
 

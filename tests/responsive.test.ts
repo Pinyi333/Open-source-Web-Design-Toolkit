@@ -113,11 +113,12 @@ describe("tool registry", () => {
     }
   });
 
-  it("ships the three v1 tools as stable", () => {
+  it("ships the stable tools in order", () => {
     expect(STABLE_TOOLS.map((tool) => tool.slug)).toEqual([
       "color-extractor",
       "typography-analyzer",
       "responsive-tester",
+      "site-planner",
     ]);
   });
 
