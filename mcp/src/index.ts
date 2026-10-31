@@ -26,6 +26,7 @@ import { BlockedUrlError } from "../../lib/net/url-guard";
 import { COMMON_BREAKPOINTS, DEVICES } from "../../lib/responsive/devices";
 import { analyzeTypography } from "../../lib/typography/analyze";
 import { decodeImage } from "./decode-image";
+import { registerPlannerTools } from "./planner-tools";
 import { registerPromptTools } from "./prompt-tools";
 import {
   describeColor,
@@ -287,6 +288,10 @@ server.registerTool(
   },
   async () => ok({ devices: DEVICES, commonBreakpoints: COMMON_BREAKPOINTS }),
 );
+
+// --- Site Planner: list_industries, plan_site, generate_wireframe, match_cases
+
+registerPlannerTools(server);
 
 // --- Image Prompt Builder: list_image_prompt_options, build_image_prompt, match_image_prompt
 

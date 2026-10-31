@@ -17,6 +17,10 @@ can pick it up without re-reading the whole history.
 smoke-tested. Not yet deployed anywhere, and the MCP package is not yet
 published to npm.**
 
+**2026-10-31: a fourth tool, the Site Planner, is on branch
+`claude/project-thread-0bzn9m` (PR pending).** Its Notion and Claude
+integrations have only been tested against stubs — see Known limitations 5–6.
+
 All three v1 tools work end to end and were driven in a real browser, not just
 unit tested. 186 tests pass; lint, typecheck and build are clean, verified from
 a fresh clone. As of 2026-09-01 the URL fetcher has also been verified against
@@ -25,8 +29,8 @@ real websites from a real machine (see below).
 | | Status |
 | --- | --- |
 | Code | Complete for v0.1 |
-| Tests | 227 passing, 5 files (on the Image Prompt Builder branch) |
-| CI | GitHub Actions, Node 20 + 22 — **has never run yet** (no push to a repo with Actions enabled observed) |
+| Tests | 276 passing, 6 files (with the Image Prompt Builder branch) |
+| CI | GitHub Actions, Node 20 + 22 — first observed green run on PR #4 (2026-10-31) |
 | Deployment | **None.** Not on Vercel or anywhere else |
 | Public demo URL | **Does not exist** — README has a deploy button but no live link |
 | Default branch | `main` exists, but **GitHub's default branch setting has not been changed** |
@@ -71,7 +75,14 @@ Node >= 20.9.
   breakpoints, and pre-checks `X-Frame-Options` / CSP so a blocked site says
   why instead of showing a blank frame.
 
-### Image Prompt Builder — built 2026-10-31 (branch `claude/project-thread-3l9jox`, not merged yet)
+- **Site Planner** (`app/tools/site-planner/`, logic in `lib/planner/`) —
+  ten industry templates → sitemap with sections per page, navigation,
+  KPIs and advice; SVG wireframes (desktop 1200 / mobile 390); reference
+  cases ranked with reasons from a built-in sample or the user's Notion
+  database; optional Claude review with the user's own API key; Markdown /
+  JSON export. Full write-up in `docs/SITE-PLANNER.md`.
+
+### Image Prompt Builder — built 2026-10-31 (PR #5)
 
 `app/tools/image-prompt-builder/`, logic in `lib/prompt/` (catalogue, builder,
 seeded one-click match, BYO-key Claude match) and a shared
@@ -81,14 +92,13 @@ gained `list_image_prompt_options`, `build_image_prompt`, `match_image_prompt`
 
 Decisions, with reasons:
 
-- **Built in parallel with the Site Planner (PR #4), against `main`.** Industry
-  ids reuse the planner's ten (test enforces it) plus six image-relevant ones
-  (manufacturing, beauty, fashion, hospitality, finance, fitness). Expect small
-  merge conflicts in `lib/tools.ts`, `mcp/src/index.ts`, both READMEs and this
-  file — whichever lands second resolves them.
-- **`lib/ai/anthropic.ts` is a generic copy of PR #4's fetch code.** Once both
-  are merged, `lib/planner/claude.ts` should call `callClaude` /
-  `extractJsonObject` from there instead of keeping its own copy.
+- **Industry ids reuse the Site Planner's ten** (a test enforces it) plus six
+  image-relevant ones (manufacturing, beauty, fashion, hospitality, finance,
+  fitness), so a site plan and its imagery share one vocabulary.
+- **`lib/ai/anthropic.ts` is a generic copy of the Site Planner's fetch code**
+  (the two were built in parallel). Open follow-up: make
+  `lib/planner/claude.ts` call `callClaude` / `extractJsonObject` from there
+  instead of keeping its own copy. Left out of this PR to keep it to one tool.
 - **One-click match is rule-based, not an LLM** (keeps the "tools do not call
   an LLM" decision): keyword → industry by keyword hits, then industry
   recommendations with a 20 % wildcard, seeded PRNG so tests are exact.
@@ -117,7 +127,14 @@ is why `tests/` can cover the real logic without rendering anything, and it is
 what makes the MCP idea below cheap to build. Do not put analysis logic in a
 `.tsx` file.
 
-### The one server-side endpoint
+### Server-side endpoints
+
+`POST /api/notion/cases` (Site Planner) is a narrow pass-through to
+`api.notion.com` only, with the database id reduced to 32 hex chars before it
+goes into the path. The visitor's token is used for one request, never stored
+or logged. Same best-effort rate limit as below (10/min).
+
+### `/api/fetch-site`
 
 `POST /api/fetch-site` fetches a user-supplied URL so the browser-side tools can
 read sites that send no CORS headers. It is the only real attack surface:
@@ -143,7 +160,13 @@ Guard code is `lib/net/url-guard.ts`; tests are table-driven in
 | No UI / icon / CSS-parser library | Each was a few dozen lines to write for what we needed |
 | Dark theme default, `useSyncExternalStore` for the preference | Setting state in an effect is a cascading render and the lint rule is right |
 | Two tool pages are `force-dynamic` | So `WDT_DISABLE_URL_FETCH` is read per request. Prerendering it would let someone set the variable, skip a rebuild, and believe the endpoint was closed while it was open |
-| Tools do **not** call an LLM | Colour extraction, CSS parsing and iframes are deterministic. Adding an LLM would trade instant/free/reproducible for keyed/paid/variable |
+| Tools do **not** call an LLM **by default** | Colour extraction, CSS parsing, iframes and site plans are deterministic. The Site Planner's Claude review is the one exception and is opt-in, bring-your-own-key, browser-to-Anthropic only (2026-10-31) |
+| Site Planner plan is rule-based; Claude only reviews it | Same brief → same plan, free, offline, testable. The model refines a fixed starting point instead of inventing an architecture |
+| "Your own Claude" = MCP first, browser API key second | MCP uses the person's existing Claude plan with no key handling at all. The browser key path sends the key straight to api.anthropic.com (`anthropic-dangerous-direct-browser-access`), so our server never sees it |
+| Plain `fetch` to Anthropic and Notion, no SDKs | Keeps runtime deps at next/react/react-dom (see Dependencies in CLAUDE.md) |
+| Notion API version pinned to `2022-06-28` | The `databases/{id}/query` endpoint the parser was written for. Newer versions move to data sources; revisit if Notion retires it |
+| Notion token for MCP via env (`NOTION_TOKEN`, `NOTION_CASES_DATABASE_ID`), never a tool argument | Keeps the secret out of agent conversations |
+| Site Planner page uses the repo's Next.js/React pattern with a plain-CSS module, no GSAP | Consistency with the other tools and no new runtime dependency. Penny's general preference is vanilla HTML/CSS/JS + GSAP, but on 2026-10-31 she chose to keep this repo's tools in Next.js for consistency. Don't port tool pages to vanilla |
 
 ---
 
@@ -166,6 +189,20 @@ Guard code is `lib/net/url-guard.ts`; tests are table-driven in
    red/blue regression image, a live URL fetch, and the guard refusing
    loopback), but nobody has yet registered it in Claude Code / another agent
    and called it from there.
+
+5. **The Notion integration has never talked to real Notion.** The cloud
+   sandbox it was built in cannot reach `api.notion.com`. Parsing, paging,
+   error mapping and the route are covered by tests with stubbed `fetch`
+   built from Notion's documented response shape, and the UI was driven up to
+   the "could not reach Notion" error. First real check: connect a real
+   database with Chinese column names.
+6. **The browser → Anthropic call has never completed for real.** The sandbox
+   browser could not reach `api.anthropic.com` (TLS interception). Request
+   shape, headers and error handling are unit-tested with stubs. Unverified:
+   that CORS passes from a deployed origin and that a real reply parses.
+7. **The four Site Planner MCP tools were smoke-tested over raw JSON-RPC**
+   (plan, wireframe written to disk, bad page slug, sample-library matching),
+   not from a real MCP client, and never with Notion env vars set.
 
 ---
 
@@ -218,6 +255,10 @@ Decisions, with reasons:
 - [ ] A full bug-hunt pass over the codebase was offered but never run.
 - [ ] Register the MCP server in a real agent (e.g. `claude mcp add`) and call
       the tools from there — the missing verification step named above.
+- [ ] Site Planner: connect a real Notion database and run a real Claude
+      review from a deployed copy (limitations 5–6).
+- [ ] Site Planner ideas not built: writing matched cases or plans back to
+      Notion, screenshots of cases fetched automatically, more industries.
 - [ ] Drive the web UI in a browser on a real machine (the API is verified;
       the pages themselves were last driven in the build sandbox).
 
@@ -255,7 +296,7 @@ npm install          # Node >= 20.9
 npm run dev          # http://localhost:3000
 npm run lint         # eslint
 npm run typecheck    # tsc --noEmit
-npm test             # vitest, 186 tests
+npm test             # vitest, 240 tests
 npm run build        # production build
 ```
 
@@ -275,7 +316,8 @@ CI runs all four on Node 20 and 22.
 | `477c4c3` | `maxDuration` for deployment; Vercel deploy button |
 | `b522d24` | `WDT_DISABLE_URL_FETCH` so a public deployment can close the endpoint |
 | 2026-09-01 | MCP server in `mcp/`; real-site fetch verified from a real machine |
-| 2026-10-31 | Image Prompt Builder (+3 MCP tools), on `claude/project-thread-3l9jox` |
+| 2026-10-31 | Site Planner tool, `/api/notion/cases`, four planner MCP tools |
+| 2026-10-31 | Image Prompt Builder (+3 MCP tools), PR #5 |
 
 Bugs the tests and browser runs caught, worth remembering because they were all
 silent failures:

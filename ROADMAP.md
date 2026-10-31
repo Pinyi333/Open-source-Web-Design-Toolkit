@@ -1,7 +1,8 @@
 # Roadmap
 
 Shipped in v0.1: **Color Extractor**, **Typography Analyzer**,
-**Responsive Tester**.
+**Responsive Tester**. Shipped since: **Site Planner** (see
+[docs/SITE-PLANNER.md](docs/SITE-PLANNER.md)).
 
 Everything below is planned but not built. Each one is a self-contained page
 that depends on nothing but the shared design system, so they can be built in

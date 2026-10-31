@@ -147,7 +147,7 @@ will not:
 
 - Move your tool out of the planned list in `ROADMAP.md`.
 - Add a section for it to `README.md` and `README.zh-TW.md`, matching the
-  shape of the existing three.
+  shape of the existing ones.
 
 That is the whole process. If something in it was unclear or wrong, a pull
 request fixing this document is also a real contribution.

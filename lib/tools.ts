@@ -49,6 +49,15 @@ export const TOOLS: Tool[] = [
     icon: "M3 5h11v10H3z M3 18h11 M17 8h4v11h-4z M8.5 15v3",
   },
   {
+    slug: "site-planner",
+    name: "Site Planner",
+    tagline: "Plan a site's architecture by industry",
+    description:
+      "Pick an industry, goals and scale to get a sitemap with sections for every page, low-fidelity wireframes you can download as SVG, and reference sites matched from a sample library or your own Notion database. Optionally ask Claude to review the plan with your own API key.",
+    status: "stable",
+    icon: "M10 3h4v4h-4z M3 17h4v4H3z M10 17h4v4h-4z M17 17h4v4h-4z M12 7v5 M5 17v-5h14v5",
+  },
+  {
     slug: "image-prompt-builder",
     name: "Image Prompt Builder",
     tagline: "Assemble image prompts by industry and style",

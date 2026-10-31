@@ -66,6 +66,31 @@ Load a page across phone, tablet and desktop frames at once.
 Each frame is a real iframe at that CSS width, so the site's own media queries
 decide what it renders.
 
+### Site Planner
+
+Plan a website's architecture from its industry, then see it.
+
+- Ten industry templates (restaurant, e-commerce, SaaS, corporate, portfolio,
+  healthcare, education, real estate, non-profit, events). Pick goals, a scale
+  from a one-page landing to a large site, and the features you need; the
+  sitemap, the sections of every page, the navigation and the header button
+  update as you click.
+- **Wireframes** for every page at desktop and mobile width, drawn as plain SVG
+  you can download and open in Figma as editable shapes.
+- **Matching cases**: reference sites ranked by industry, features and style,
+  with the reasons for each score. A starter library is built in; connect
+  **your own Notion database** to use a library you curate
+  ([setup](docs/SITE-PLANNER.md#notion-case-library)).
+- **Your own Claude**, two ways: call the planner from Claude Code or Claude
+  Desktop through the MCP server (no key needed), or paste your own Anthropic
+  API key to have Claude review the plan. The key goes from your browser
+  straight to Anthropic and is never sent to this app's server.
+- Export the plan as Markdown or JSON.
+
+The plan itself is rule-based and deterministic: the same brief always gives the
+same plan, it works offline, and it costs nothing. Claude is an optional layer
+on top. See [docs/SITE-PLANNER.md](docs/SITE-PLANNER.md).
+
 ### Image Prompt Builder
 
 Assemble an image-generation prompt from a keyword and a few choices.
@@ -86,7 +111,8 @@ Assemble an image-generation prompt from a keyword and a few choices.
 
 The same analysis tools are available to AI coding agents as an
 [MCP server](mcp/README.md) — `extract_palette`, `check_contrast`,
-`analyze_typography` and friends, running locally over stdio with no browser
+`analyze_typography`, `plan_site`, `generate_wireframe`, `match_cases` and
+friends, running locally over stdio with no browser
 involved. See [mcp/README.md](mcp/README.md) for setup.
 
 ---
@@ -123,20 +149,28 @@ Then open <http://localhost:3000>. Node 20 or newer is required.
   dependency, which is why it can be tested directly.
 
 ```
-app/            routes: the home page, one page per tool, one API route
+app/            routes: the home page, one page per tool, two API routes
 components/     the design system and shared UI primitives
 lib/
   color/        conversion, WCAG contrast, median cut, palette export
   typography/   a small CSS reader, length parsing, scale detection
   responsive/   device presets and viewport maths
   net/          the SSRF guard and the site fetcher
+  planner/      industry templates, site plans, SVG wireframes, case matching,
+                the Notion reader and the optional Claude review
   tools.ts      the tool registry every page reads from
 tests/          Vitest, covering the pure logic
 ```
 
-### One server-side endpoint
+### Server-side endpoints
 
-Everything runs in the browser except fetching a URL you type in, which
+Besides `POST /api/fetch-site` below, the Site Planner has
+`POST /api/notion/cases`, a narrow pass-through that exists only because
+Notion's API sends no CORS headers. It only ever calls `api.notion.com`, with
+the database id reduced to 32 hex characters, and uses the visitor's token for
+that one request without storing or logging it.
+
+Everything else runs in the browser except fetching a URL you type in, which
 browsers will not let a page do across origins. `POST /api/fetch-site` does
 that on the server, and it is the one piece of this app with a real attack
 surface, so it is written defensively:
