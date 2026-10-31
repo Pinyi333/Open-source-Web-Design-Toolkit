@@ -15,6 +15,9 @@ entirely on your own machine over stdio.
 | `export_palette` | A list of hex colours → paste-ready CSS variables, Tailwind `@theme`, JSON, or W3C design tokens |
 | `analyze_typography` | Typography audit of a public URL, or of HTML/CSS passed directly: families and origins, size scale and consistency, weights, heading structure, breakpoints, findings |
 | `list_device_presets` | The Responsive Tester's device viewports (CSS pixels) and common breakpoints |
+| `list_image_prompt_options` | Every Image Prompt Builder option (industry, palette, style, mood, shot, lighting, ratio) with ids and labels |
+| `build_image_prompt` | Keyword + option ids → an image prompt (natural / Midjourney / SD, English or Traditional Chinese) with a negative prompt |
+| `match_image_prompt` | Rule-based one-click match: fills unlocked groups to suit the keyword's industry and returns the assembled prompt |
 
 ## Setup
 

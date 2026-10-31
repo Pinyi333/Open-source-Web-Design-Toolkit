@@ -3,7 +3,7 @@
 Working state of this project, kept current so any session — or any person —
 can pick it up without re-reading the whole history.
 
-**Last updated:** 2026-09-01
+**Last updated:** 2026-10-31
 
 > Keep this file up to date — see "Updating this file" at the bottom. A Stop
 > hook in `.claude/settings.json` says so out loud when commits have landed
@@ -25,7 +25,7 @@ real websites from a real machine (see below).
 | | Status |
 | --- | --- |
 | Code | Complete for v0.1 |
-| Tests | 186 passing, 4 files |
+| Tests | 227 passing, 5 files (on the Image Prompt Builder branch) |
 | CI | GitHub Actions, Node 20 + 22 — **has never run yet** (no push to a repo with Actions enabled observed) |
 | Deployment | **None.** Not on Vercel or anywhere else |
 | Public demo URL | **Does not exist** — README has a deploy button but no live link |
@@ -70,6 +70,36 @@ Node >= 20.9.
   plus custom widths, reads the target site's own media queries to offer real
   breakpoints, and pre-checks `X-Frame-Options` / CSP so a blocked site says
   why instead of showing a blank frame.
+
+### Image Prompt Builder — built 2026-10-31 (branch `claude/project-thread-3l9jox`, not merged yet)
+
+`app/tools/image-prompt-builder/`, logic in `lib/prompt/` (catalogue, builder,
+seeded one-click match, BYO-key Claude match) and a shared
+`lib/ai/anthropic.ts` fetch client. 36 tests in `tests/prompt.test.ts`. MCP
+gained `list_image_prompt_options`, `build_image_prompt`, `match_image_prompt`
+(`mcp/src/prompt-tools.ts`).
+
+Decisions, with reasons:
+
+- **Built in parallel with the Site Planner (PR #4), against `main`.** Industry
+  ids reuse the planner's ten (test enforces it) plus six image-relevant ones
+  (manufacturing, beauty, fashion, hospitality, finance, fitness). Expect small
+  merge conflicts in `lib/tools.ts`, `mcp/src/index.ts`, both READMEs and this
+  file — whichever lands second resolves them.
+- **`lib/ai/anthropic.ts` is a generic copy of PR #4's fetch code.** Once both
+  are merged, `lib/planner/claude.ts` should call `callClaude` /
+  `extractJsonObject` from there instead of keeping its own copy.
+- **One-click match is rule-based, not an LLM** (keeps the "tools do not call
+  an LLM" decision): keyword → industry by keyword hits, then industry
+  recommendations with a 20 % wildcard, seeded PRNG so tests are exact.
+  Claude is opt-in only, with the visitor's own key or via MCP.
+- **UI copy is Traditional Chinese first, English second** for this tool only,
+  because its audience and catalogue are bilingual; the rest of the app stays
+  English.
+
+Not verified: the real Anthropic API call (browser path was tested with an
+intercepted fake response only); prompts were not run through any image model
+to judge output quality; MCP tools tested over raw JSON-RPC, not a real client.
 
 ### Session support files
 
@@ -245,6 +275,7 @@ CI runs all four on Node 20 and 22.
 | `477c4c3` | `maxDuration` for deployment; Vercel deploy button |
 | `b522d24` | `WDT_DISABLE_URL_FETCH` so a public deployment can close the endpoint |
 | 2026-09-01 | MCP server in `mcp/`; real-site fetch verified from a real machine |
+| 2026-10-31 | Image Prompt Builder (+3 MCP tools), on `claude/project-thread-3l9jox` |
 
 Bugs the tests and browser runs caught, worth remembering because they were all
 silent failures:

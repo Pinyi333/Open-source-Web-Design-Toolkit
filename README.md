@@ -66,6 +66,22 @@ Load a page across phone, tablet and desktop frames at once.
 Each frame is a real iframe at that CSS width, so the site's own media queries
 decide what it renders.
 
+### Image Prompt Builder
+
+Assemble an image-generation prompt from a keyword and a few choices.
+
+- Sixteen industries, fourteen palettes, sixteen styles, twelve moods, twelve
+  camera shots, ten lighting setups and seven aspect ratios, each labelled in
+  Traditional Chinese and English.
+- Outputs plain sentences (Nano Banana, GPT Image, Flux…), Midjourney with
+  `--ar` / `--no`, or Stable Diffusion tags with a separate negative prompt and
+  a suggested size, in English or Traditional Chinese.
+- **One-click match** guesses the industry from the keyword and fills the rest
+  with combinations that suit it. Lock any group to keep it. No AI, no key.
+- Optionally let **your own Claude** choose: paste an Anthropic key (it stays in
+  your browser and goes straight to api.anthropic.com), or call the same
+  builder through the MCP server on your own subscription.
+
 ### For AI agents: the MCP server
 
 The same analysis tools are available to AI coding agents as an

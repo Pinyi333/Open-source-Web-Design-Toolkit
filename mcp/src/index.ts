@@ -26,6 +26,7 @@ import { BlockedUrlError } from "../../lib/net/url-guard";
 import { COMMON_BREAKPOINTS, DEVICES } from "../../lib/responsive/devices";
 import { analyzeTypography } from "../../lib/typography/analyze";
 import { decodeImage } from "./decode-image";
+import { registerPromptTools } from "./prompt-tools";
 import {
   describeColor,
   describeSwatch,
@@ -286,6 +287,10 @@ server.registerTool(
   },
   async () => ok({ devices: DEVICES, commonBreakpoints: COMMON_BREAKPOINTS }),
 );
+
+// --- Image Prompt Builder: list_image_prompt_options, build_image_prompt, match_image_prompt
+
+registerPromptTools(server);
 
 // --- start ----------------------------------------------------------------
 

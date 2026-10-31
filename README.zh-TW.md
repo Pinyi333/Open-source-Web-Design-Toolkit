@@ -51,6 +51,15 @@ English version: **[README.md](README.md)**
 
 每個框都是該 CSS 寬度下的真實 iframe，所以你看到的是網站自己的響應式行為。
 
+### Image Prompt Builder（圖片提示詞產生器）
+
+輸入關鍵字，再挑幾個選項，就能組出可直接貼上的生圖提示詞。
+
+- 16 種產業、14 組色系、16 種風格、12 種調性、12 種鏡位、10 種光線、7 種比例，全部中英對照。
+- 輸出自然語句（Nano Banana、GPT Image、Flux…）、附 `--ar`／`--no` 參數的 Midjourney，或 Stable Diffusion 標籤加上獨立的反向提示詞與建議尺寸；英文、繁中都能輸出。
+- **AI 一鍵搭配**會從關鍵字判斷產業，再挑出適合的組合；任何一組都能鎖定保留。純規則運算，不需金鑰。
+- 也可以讓**你自己的 Claude** 來選：貼上 Anthropic API key（只存在你的瀏覽器、直接送到 api.anthropic.com），或透過 MCP 伺服器用你自己的訂閱呼叫同一套產生器。
+
 ### 給 AI 代理用的 MCP 伺服器
 
 同一套分析工具也以 [MCP 伺服器](mcp/README.md)的形式提供給 AI 編碼代理 ——

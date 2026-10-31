@@ -113,12 +113,17 @@ describe("tool registry", () => {
     }
   });
 
-  it("ships the three v1 tools as stable", () => {
-    expect(STABLE_TOOLS.map((tool) => tool.slug)).toEqual([
-      "color-extractor",
-      "typography-analyzer",
-      "responsive-tester",
-    ]);
+  it("ships the v1 tools and the Image Prompt Builder as stable", () => {
+    // arrayContaining rather than toEqual, so tools landing in parallel
+    // branches do not all edit the same list.
+    expect(STABLE_TOOLS.map((tool) => tool.slug)).toEqual(
+      expect.arrayContaining([
+        "color-extractor",
+        "typography-analyzer",
+        "responsive-tester",
+        "image-prompt-builder",
+      ]),
+    );
   });
 
   it("gives every tool the copy the UI needs", () => {
