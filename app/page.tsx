@@ -14,7 +14,7 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <Badge tone="accent" className="mb-5">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent" />
-              v0.1 · three tools, more on the way
+              v0.1 · four tools, more on the way
             </Badge>
             <h1 className="text-balance text-4xl font-semibold tracking-tight text-ink sm:text-5xl">
               Design utilities that run{" "}
